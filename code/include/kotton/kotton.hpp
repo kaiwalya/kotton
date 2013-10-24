@@ -6,8 +6,8 @@
 #include <assert.h>
 
 namespace kotton {
-	
-	using Func = std::function<void(void)>;
+	struct fiber_execution;
+	using Func = std::function<void(fiber_execution *)>;
 	
 	enum class stack_growth {
 		increasing, decreasing
@@ -83,8 +83,8 @@ namespace kotton {
 			enter();
 		}
 		
-
 		bool proceed();
+		void yield();
 		
 	private:
 

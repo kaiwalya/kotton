@@ -46,7 +46,7 @@ void fiber_execution::swap() {
 			m_state = fiber_state::paused;
 			return;
 		}
-		m_f.getFunc()();
+		m_f.getFunc()(this);
 		m_state = fiber_state::finished;
 		longjmp(m_exitBuff, 1);
 		assert(false);
@@ -71,6 +71,12 @@ void fiber_execution::swap() {
 }
 
 bool fiber_execution::proceed() {
+	assert(!m_s.isCurrent());
 	swap();
 	return m_state == fiber_state::paused;
+}
+
+void fiber_execution::yield() {
+	assert(m_s.isCurrent());
+	swap();
 }
