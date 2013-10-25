@@ -75,6 +75,35 @@ int main () {
 		throwIf(gCount != N);
 
 	}
+	
+	//Schedular
+	{
+		kotton::schedular s;
+		
+		auto producer = [&s](){
+			static const char msg[] = "Hello world!";
+			s.writeCopy(0, msg, sizeof(msg));
+		};
+
+		auto transformer = [&s](){
+			static const char lf = '\n';
+			s.link(0, 0, 0, 0);
+			s.writeCopy(0, &lf, 1);
+		};
+		
+		auto consumer = [&s]() {
+			char c;
+			s.readCopy(0, &c, 1);
+			std::cout << c;
+		};
+		
+		auto p = s.spawn(producer);
+		auto t = s.spawn(transformer);
+		auto c = s.spawn(consumer);
+		
+		s.link(p, 0, t, 0);
+		s.link(t, 0, c, 0);
+	}
 
 	return 0;
 }

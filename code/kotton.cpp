@@ -69,6 +69,8 @@ void execution::swap() {
 		}
 		m_f.getFunc()(this);
 		m_s.checkGuard();
+	
+		
 		m_state = fiber_state::finished;
 		longjmp(m_exitBuff, 1);
 		assert(false);

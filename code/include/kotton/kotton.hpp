@@ -5,6 +5,7 @@
 #include <setjmp.h>
 #include <assert.h>
 #include <unistd.h>
+#include <thread>
 
 static const int gPageSize = getpagesize();
 
@@ -101,6 +102,30 @@ namespace kotton {
 		const stack & m_s;
 
 
+	};
+	
+	struct schedular {
+		using Func = std::function<void(void)>;
+		using fiber_id = int64_t;
+		using execution_id = int64_t;
+		using port_id = int64_t;
+		using link_id = int64_t;
+		using mutex = std::mutex;
+		using lock = std::unique_lock<mutex>;
+		
+		execution_id spawn(const Func &&);
+		execution_id spawn(const Func &);
+		
+		schedular();
+		schedular(const schedular &) = delete;
+		schedular & operator = (const schedular &) = delete;
+		
+		//Source Port to Destination Port, if the destination port is busy, it will get in the queue
+		void link(execution_id fromE, port_id fromP, execution_id toE, port_id toP);
+		
+		void writeCopy(port_id port, const char * location, size_t length);
+		void readCopy(port_id port, char * location, size_t length);
+		
 	};
 	
 }
