@@ -9,19 +9,40 @@ bool fiber_execution::enter() {
 		
 		stackTop = (char *)((intptr_t)stackTop & ~(intptr_t)15);
 		
-		asm ("pushq %%rbp;"
-			 "movq %%rsp, %%rbp;"
-			 "movq %[stackTopR], %%rsp;"
-			 :
-			 :[stackTopR]"r"(stackTop)
-			 :
-			 );
+		constexpr bool is32Bit = sizeof(void *) == 4;
+		constexpr bool is64Bit = sizeof(void *) == 8;
+		static_assert(is32Bit || is64Bit, "Current only 32 or 64 bit");
 		
-		this->return_barrier();
-		
-		asm ("movq %rbp, %rsp;"
-			 "popq %rbp;"
-			 );
+		if (is64Bit) {
+			asm ("pushq %%rbp;"
+				 "movq %%rsp, %%rbp;"
+				 "movq %[stackTopR], %%rsp;"
+				 :
+				 :[stackTopR]"r"(stackTop)
+				 :
+				 );
+			
+			this->return_barrier();
+			
+			asm ("movq %rbp, %rsp;"
+				 "popq %rbp;"
+				 );
+		}
+		else if (is32Bit) {
+			asm ("pushl %%ebp;"
+				 "movl %%esp, %%ebp;"
+				 "movl %[stackTopR], %%esp;"
+				 :
+				 :[stackTopR]"r"(stackTop)
+				 :
+				 );
+			
+			this->return_barrier();
+			
+			asm ("movl %ebp, %esp;"
+				 "popl %ebp;"
+				 );
+		}
 		
 	}
 	else {
