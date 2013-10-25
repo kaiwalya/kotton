@@ -80,18 +80,23 @@ int main () {
 	{
 		kotton::schedular s;
 		
-		auto producer = [&s](){
+		auto producer = [](kotton::schedular & s){
 			static const char msg[] = "Hello world!";
 			s.writeCopy(0, msg, sizeof(msg));
 		};
 
-		auto transformer = [&s](){
+		auto transformer = [](kotton::schedular & s){
 			static const char lf = '\n';
-			s.link(0, 0, 0, 0);
+			s.linkInternal(0, 0);
 			s.writeCopy(0, &lf, 1);
 		};
 		
-		auto consumer = [&s]() {
+		auto copier = [](kotton::schedular & s) {
+			s.linkInternal(0, 0);
+			s.linkInternal(0, 1);
+		};
+		
+		auto consumer = [](kotton::schedular & s) {
 			char c;
 			s.readCopy(0, &c, 1);
 			std::cout << c;
@@ -99,10 +104,17 @@ int main () {
 		
 		auto p = s.spawn(producer);
 		auto t = s.spawn(transformer);
-		auto c = s.spawn(consumer);
+		s.link(p, t);
 		
-		s.link(p, 0, t, 0);
-		s.link(t, 0, c, 0);
+		auto cp = s.spawn(copier);
+		s.link(t, cp);
+		
+		auto c = s.spawn(consumer);
+		s.linkPort(cp, 0, c, 0);
+		
+		s.linkInput(cp, 1, 0);
+		consumer(s);
+		
 	}
 
 	return 0;
