@@ -4,8 +4,14 @@
 #include <assert.h>
 #include <vector>
 #include <memory>
+#include <exception>
 
 size_t gCount = 0;
+
+void throwIf(bool pred) {
+	if (pred)
+		throw new std::bad_exception();
+}
 
 int main () {
 	//Single
@@ -13,16 +19,18 @@ int main () {
 		kotton::stack s;
 		kotton::fiber f([] (kotton::fiber_execution * ctx) {
 			ctx->yield();
-			std::cout << "Hello from fiber" << std::endl;
+			gCount++;
 			ctx->yield();
 		});
 		
 		kotton::fiber_execution exec(f, s);
 		while(exec.proceed());
+		throwIf(gCount != 1);
 	}
 
 	//Multiple
 	{
+		gCount = 0;
 		const size_t N = 128;
 		struct Single {
 			kotton::stack s;
@@ -30,7 +38,7 @@ int main () {
 			kotton::fiber_execution e;
 			Single():f([] (kotton::fiber_execution * ctx) {
 				ctx->yield();
-				std::cout << "Hello from fiber: " << ++gCount <<std::endl;
+				gCount++;
 				ctx->yield();
 			}), e(f,s) {
 				
@@ -63,6 +71,8 @@ int main () {
 		for (auto & s: singles) {
 			s->proceed();
 		}
+		
+		throwIf(gCount != N);
 
 	}
 
