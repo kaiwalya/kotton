@@ -4,10 +4,15 @@
 #include <functional>
 #include <setjmp.h>
 #include <assert.h>
+#include <unistd.h>
+
+static const int gPageSize = getpagesize();
 
 namespace kotton {
 	struct fiber_execution;
 	using Func = std::function<void(fiber_execution *)>;
+	static const size_t guardSize = sizeof(int64_t) * 2;
+	static const char guardData[sizeof(uint64_t)] = "kotton!";
 	
 	enum class stack_growth {
 		increasing, decreasing
@@ -17,11 +22,12 @@ namespace kotton {
 		const size_t sz;
 		char * const loc;
 		
-		stack(size_t size = 0):sz(size ? size : 1024), loc(new char[sz]) {
-			
+		stack(size_t size = 0):sz(size ? size : gPageSize), loc(new char[sz]) {
+			installGuard();
 		}
 		
 		~stack() {
+			checkGuard();
 			delete [] loc;
 		}
 		
@@ -43,19 +49,14 @@ namespace kotton {
 		}
 		
 		void installGuard() const{
-			assert(isCurrent());
-			assert(sz >= sizeof(uint64_t) && freeSpace() >= sizeof(uint64_t));
-			static const char magicVal[sizeof(uint64_t)] = "kotton!";
-			*(uint64_t *)loc = *(uint64_t *)magicVal;
+			assert(sz > guardSize);
+			memset_pattern8(loc, guardData, guardSize);
 		}
 		
 		bool checkGuard() const {
-			assert(isCurrent());
-			assert(sz >= sizeof(uint64_t) && freeSpace() >= sizeof(uint64_t));
-			static const char magicVal[sizeof(uint64_t)] = "kotton!";
-			return *(uint64_t *)loc == *(uint64_t *)magicVal;
+			assert(sz > sizeof(int64_t));
+			return memcmp(loc, guardData, guardSize) == 0;
 		}
-		
 	};
 	
 	

@@ -35,18 +35,19 @@ bool fiber_execution::enter() {
 }
 
 void fiber_execution::return_barrier() {
-	m_s.installGuard();
-	m_enterReturn = true;
 	swap();
 }
 
 void fiber_execution::swap() {
 	if (m_state == fiber_state::notReady) {
+		m_s.installGuard();
+		m_enterReturn = true;
 		if (setjmp(m_targetbuff) == 0) {
 			m_state = fiber_state::paused;
 			return;
 		}
 		m_f.getFunc()(this);
+		m_s.checkGuard();
 		m_state = fiber_state::finished;
 		longjmp(m_exitBuff, 1);
 		assert(false);
