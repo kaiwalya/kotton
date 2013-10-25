@@ -106,25 +106,27 @@ namespace kotton {
 	
 	struct schedular {
 		using Func = std::function<void(schedular & s)>;
-		using fiber_id = int64_t;
-		using execution_id = int64_t;
 		using port_id = int64_t;
-		using link_id = int64_t;
 		using mutex = std::mutex;
 		using lock = std::unique_lock<mutex>;
 		
-		execution_id spawn(const Func &&);
-		execution_id spawn(const Func &);
 		
+		//Create Root Schedular
 		schedular();
+		
+		//Create Child Schedular
+		schedular(const schedular &, Func && f);
+		schedular(const schedular &, Func & f);
+		
 		schedular(const schedular &) = delete;
 		schedular & operator = (const schedular &) = delete;
 		
+		
 		//Source Port to Destination Port, if the destination port is busy, it will get in the queue
-		void link(execution_id fromE, execution_id toE);
-		void linkPort(execution_id fromE, port_id fromP, execution_id toE, port_id toP);
-		void linkOutput(port_id fromP, execution_id toE, port_id toP);
-		void linkInput(execution_id fromE, port_id fromP, port_id toP);
+		void link(const schedular & fromE, const schedular & toE);
+		void linkPort(const schedular & fromE, port_id fromP, const schedular & toE, port_id toP);
+		void linkOutput(port_id fromP, const schedular & toE, port_id toP);
+		void linkInput(const schedular & fromE, port_id fromP, port_id toP);
 		void linkInternal(port_id fromP, port_id toP);
 		
 		void writeCopy(port_id port, const char * location, size_t length);

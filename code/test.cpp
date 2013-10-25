@@ -91,28 +91,19 @@ int main () {
 			s.writeCopy(0, &lf, 1);
 		};
 		
-		auto copier = [](kotton::schedular & s) {
-			s.linkInternal(0, 0);
-			s.linkInternal(0, 1);
-		};
-		
 		auto consumer = [](kotton::schedular & s) {
 			char c;
 			s.readCopy(0, &c, 1);
 			std::cout << c;
 		};
 		
-		auto p = s.spawn(producer);
-		auto t = s.spawn(transformer);
-		s.link(p, t);
-		
-		auto cp = s.spawn(copier);
-		s.link(t, cp);
-		
-		auto c = s.spawn(consumer);
-		s.linkPort(cp, 0, c, 0);
-		
-		s.linkInput(cp, 1, 0);
+		{
+			kotton::schedular p(s, producer);
+			kotton::schedular t(s, transformer);
+			s.link(p, t);
+			
+			s.linkInput(t, 0, 0);
+		}
 		consumer(s);
 		
 	}
