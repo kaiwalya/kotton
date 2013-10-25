@@ -9,8 +9,8 @@
 static const int gPageSize = getpagesize();
 
 namespace kotton {
-	struct fiber_execution;
-	using Func = std::function<void(fiber_execution *)>;
+	struct execution;
+	using Func = std::function<void(execution *)>;
 	static const size_t guardSize = sizeof(int64_t) * 2;
 	static const char guardData[sizeof(uint64_t)] = "kotton!";
 	
@@ -74,9 +74,9 @@ namespace kotton {
 	enum class fiber_state {
 		notReady, paused, playing, finished
 	};
-	struct fiber_execution {
+	struct execution {
 		
-		fiber_execution(const fiber & f, const stack & s)
+		execution(const fiber & f, const stack & s)
 		:m_state(fiber_state::notReady),
 		m_enterReturn(false),
 		m_f(f),

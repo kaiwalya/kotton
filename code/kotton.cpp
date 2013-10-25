@@ -3,7 +3,7 @@
 
 using namespace kotton;
 
-bool fiber_execution::enter() {
+bool execution::enter() {
 	if (!m_s.isCurrent()) {
 		auto stackTop = m_s.loc + m_s.sz;
 		
@@ -55,11 +55,11 @@ bool fiber_execution::enter() {
 	return false;
 }
 
-void fiber_execution::return_barrier() {
+void execution::return_barrier() {
 	swap();
 }
 
-void fiber_execution::swap() {
+void execution::swap() {
 	if (m_state == fiber_state::notReady) {
 		m_s.installGuard();
 		m_enterReturn = true;
@@ -92,13 +92,13 @@ void fiber_execution::swap() {
 	}
 }
 
-bool fiber_execution::proceed() {
+bool execution::proceed() {
 	assert(!m_s.isCurrent());
 	swap();
 	return m_state == fiber_state::paused;
 }
 
-void fiber_execution::yield() {
+void execution::yield() {
 	assert(m_s.isCurrent());
 	swap();
 }

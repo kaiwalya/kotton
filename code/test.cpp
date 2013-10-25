@@ -17,13 +17,13 @@ int main () {
 	//Single
 	{
 		kotton::stack s;
-		kotton::fiber f([] (kotton::fiber_execution * ctx) {
+		kotton::fiber f([] (kotton::execution * ctx) {
 			ctx->yield();
 			gCount++;
 			ctx->yield();
 		});
 		
-		kotton::fiber_execution exec(f, s);
+		kotton::execution exec(f, s);
 		while(exec.proceed());
 		throwIf(gCount != 1);
 	}
@@ -35,8 +35,8 @@ int main () {
 		struct Single {
 			kotton::stack s;
 			kotton::fiber f;
-			kotton::fiber_execution e;
-			Single():f([] (kotton::fiber_execution * ctx) {
+			kotton::execution e;
+			Single():f([] (kotton::execution * ctx) {
 				ctx->yield();
 				gCount++;
 				ctx->yield();
