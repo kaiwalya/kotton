@@ -87,7 +87,7 @@ int main () {
 
 		auto transformer = [](kotton::schedular & s){
 			static const char lf = '\n';
-			s.linkInternal(0, 0);
+			s.link(0, 0);
 			s.writeCopy(0, &lf, 1);
 		};
 		
@@ -102,7 +102,7 @@ int main () {
 			kotton::schedular t(s, transformer);
 			s.link(p, t);
 			
-			s.linkInput(t, 0, 0);
+			s.link(t, 0, 0);
 		}
 		consumer(s);
 		

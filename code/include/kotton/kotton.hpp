@@ -121,13 +121,17 @@ namespace kotton {
 		schedular(const schedular &) = delete;
 		schedular & operator = (const schedular &) = delete;
 		
-		
-		//Source Port to Destination Port, if the destination port is busy, it will get in the queue
+		//Link output of fromE to inputs of toE child schedular
 		void link(const schedular & fromE, const schedular & toE);
-		void linkPort(const schedular & fromE, port_id fromP, const schedular & toE, port_id toP);
-		void linkOutput(port_id fromP, const schedular & toE, port_id toP);
-		void linkInput(const schedular & fromE, port_id fromP, port_id toP);
-		void linkInternal(port_id fromP, port_id toP);
+		
+		//Link port fromP of this to port toP of toE
+		void link(port_id fromP, const schedular & toE, port_id toP);
+		
+		//Link port fromP of fromE to port toP of this
+		void link(const schedular & fromE, port_id fromP, port_id toP);
+		
+		//Link port fromP of this to port toP of this
+		void link(port_id fromP, port_id toP);
 		
 		void writeCopy(port_id port, const char * location, size_t length);
 		void readCopy(port_id port, char * location, size_t length);
